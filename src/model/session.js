@@ -1,9 +1,32 @@
+const crypto = require('crypto');
 const db = require("../database/db.js");
 
-const insert_session = db.prepare(`SELECT 1`);
+const insert_session = db.prepare(`
+   INSERT INTO sessions (id, user_id, expires_at)
+  VALUES ($id, $user_id, $expires_at)
+`);
+
+
 
 function createSession(user_id) {
-  // to-do
+  // Generate a random session ID
+  const sessionId = crypto.randomBytes(18).toString('base64');
+
+  // Calculate the expiration time
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const expiresAtISO = expiresAt.toISOString();
+
+
+  // Insert the session into the database
+  insert_session.run({
+    id: sessionId,
+    user_id: user_id,
+    expires_at: expiresAtISO,
+  });
+
+  // Return the session ID
+  return sessionId;
+
 }
 
 const select_session = db.prepare(`
